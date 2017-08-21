@@ -274,6 +274,24 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size);
     }
 }
 
+- (void)unlock_safe {
+    if (referenceCountingDisabled)
+    {
+        return;
+    }
+    
+    if (framebufferReferenceCount > 0) {
+        framebufferReferenceCount--;
+    } else {
+        NSLog(@"WARNING====WARNING====WARNING====WARNING====WARNING====WARNING====WARNING====WARNING====WARNING====WARNING====WARNING====WARNING");
+    }
+    
+    if (framebufferReferenceCount < 1)
+    {
+        [[GPUImageContext sharedFramebufferCache] returnFramebufferToCache:self];
+    }
+}
+
 - (void)clearAllLocks;
 {
     framebufferReferenceCount = 0;
@@ -302,7 +320,8 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
     GPUImageFramebuffer *framebuffer = (__bridge_transfer GPUImageFramebuffer*)info;
     
     [framebuffer restoreRenderTarget];
-    [framebuffer unlock];
+    [framebuffer unlock_safe];
+    
     [[GPUImageContext sharedFramebufferCache] removeFramebufferFromActiveImageCaptureList:framebuffer];
 }
 
